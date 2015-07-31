@@ -1,0 +1,96 @@
+
+package org.cinergi.sdsc.metadata;
+
+import java.io.File;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.Date;
+import java.util.ArrayList;
+import java.math.BigDecimal;
+import javax.xml.bind.UnmarshalException;
+import org.isotc211.iso19139.d_2007_04_17.gmd.EXGeographicBoundingBoxType;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.cinergi.sdsc.metadata.enhancer.spatial.ClavinLocationFinder;
+
+public class MetadataLoader {
+
+    private static Logger log = LogManager.getLogger(MetadataLoader.class);
+
+
+
+    static public void getLocationsFromText(String text) throws Exception {
+
+	// save the text into a file
+	File tmpFile = new File("/tmp/"+new Date().getTime());
+	PrintWriter pw = new PrintWriter(tmpFile);
+	pw.println(text);
+	pw.close();
+
+	String cmd = " spatialtext/spatialtext.pl -in "+tmpFile.getAbsolutePath();
+
+	String[] args = new String[] { cmd };
+	Process process = Runtime.getRuntime().exec(args[0]);
+
+	BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+	String line = null;
+	while ((line = stdInput.readLine()) != null) {
+	    System.out.println(line);
+	}
+	stdInput.close();
+
+	tmpFile.delete();
+
+    }
+
+
+    public static void main(String[] args) throws Exception {
+
+	//File dir = new File("/Users/kailin/Desktop/metadata/samples/National_Climatic_Data_Center");
+	File dir = new File("/Users/kailin/Desktop/metadata/samples/NCDC_GIS");
+	String[] filenames = dir.list();
+	for (String filename : filenames) {
+	    log.info("=============================================================");
+	    log.info("Processing the file: "+filename);
+	    File file = new File(dir, filename);
+	    try {
+		List<EXGeographicBoundingBoxType> boxes = ISO19139Metadata.getBoundingBox(file);
+		log.info("Parsed as ISO 19139");
+		for (EXGeographicBoundingBoxType box : boxes) {
+		    BigDecimal east = box.getEastBoundLongitude().getDecimal();
+		    BigDecimal west = box.getWestBoundLongitude().getDecimal();
+		    BigDecimal north = box.getNorthBoundLatitude().getDecimal();
+		    BigDecimal south = box.getSouthBoundLatitude().getDecimal();
+		    log.info("Found the bounding box: "+east+",  "+south+", "+west+", "+north);
+		}
+
+		log.info("-----------------------------------");
+		log.info("Calculating a bounding box from the text...");
+
+		String absText = ISO19139Metadata.getTextDescription(file);
+		log.info(absText);
+		log.info("-----------------------------------");
+		getLocationsFromText(absText);
+		log.info("-----------------------------------");
+                ClavinLocationFinder.getLocationsFromText(absText);
+
+	    } catch (UnmarshalException exception) {
+		try {
+		    org.cinergi.alternative.metadata.Metadata.Idinfo.Spdom.Bounding box = AlternativeMetadata.getBoundingBox(file);
+		    log.info("Parsed as informal metadata");
+		    float east = box.getEastbc();
+		    float west = box.getWestbc();
+		    float north = box.getNorthbc();
+		    float south = box.getSouthbc();
+		    log.info("Found the bounding box: "+east+",  "+south+", "+west+", "+north);
+		} catch (UnmarshalException exception1) {
+		    System.out.println("the file doesn't include metaddata for the given schema");
+		}
+	    }
+	}
+
+    }
+
+}

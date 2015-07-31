@@ -1,0 +1,30 @@
+
+package org.cinergi.sdsc.metadata.enhancer.spatial;
+
+import java.io.File;
+import java.util.List;
+import com.bericotech.clavin.GeoParser;
+import com.bericotech.clavin.GeoParserFactory;
+import com.bericotech.clavin.resolver.ResolvedLocation;
+import com.bericotech.clavin.util.TextUtils;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
+
+public class ClavinLocationFinder {
+
+    private static Logger log = LogManager.getLogger(ClavinLocationFinder.class);
+
+    static public void getLocationsFromText(String inputString) throws Exception {
+
+	log.info("-----------------------------------");
+
+	GeoParser parser = GeoParserFactory.getDefault("/Users/kailin/Desktop/clavin-2.0.0rc1/IndexDirectory/");
+	List<ResolvedLocation> resolvedLocations = parser.parse(inputString);
+	for (ResolvedLocation resolvedLocation : resolvedLocations) {
+	    System.out.println(resolvedLocation);
+	}
+
+    }
+
+}

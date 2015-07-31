@@ -1,0 +1,26 @@
+
+package org.cinergi.sdsc.metadata.enhancer.spatial;
+
+import java.io.File;
+import java.util.List;
+import com.bericotech.clavin.GeoParser;
+import com.bericotech.clavin.GeoParserFactory;
+import com.bericotech.clavin.resolver.ResolvedLocation;
+import com.bericotech.clavin.util.TextUtils;
+
+public class SpatialEnhancer {
+
+    static public void main(String[] arga) throws Exception {
+
+	GeoParser parser = GeoParserFactory.getDefault("/Users/kailin/Desktop/clavin-2.0.0rc1/IndexDirectory/");
+
+	String inputString = "SP-9, Special Publication: The purpose of this study is to provide geological information that can be used in the evaluation of the Oregon Cascades as a potential geothermal resource. The 'Breitenbush Hot Springs' area was selected because it includes the boundary between the Tertiary rocks of the Western Cascades and the Quaternary lavas of the High Cascade crest. The fact that the contact is marked by a line of hot springs along about 200 km of its length has led geologists to speculate that it may be the site of a major fault system.";
+
+	List<ResolvedLocation> resolvedLocations = parser.parse(inputString);
+	for (ResolvedLocation resolvedLocation : resolvedLocations) {
+	    System.out.println(resolvedLocation);
+	}
+
+    }
+
+}
